@@ -28,7 +28,7 @@ class EllipticCurve:
                     return (x,-y)
                 else:
                     raise Exception ("Not a valid point on the curve")
-            case "Infinity":
+            case "Infinity" | "infinity" | "inf" | "Inf" | "I" | "i":
                 return "Infinity"
             case _:
                 raise Exception ("Not a valid point on the curve")
@@ -39,5 +39,6 @@ curve = EllipticCurve(0,4)
 print(curve.y2Value(2))
 print(curve) 
 print(curve.pointNegation((0,-2)))
-print(curve.pointNegation("Infinity"))
+
+print(curve.pointNegation("Inf"))
 
