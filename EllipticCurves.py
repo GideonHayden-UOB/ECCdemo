@@ -18,19 +18,26 @@ class EllipticCurve:
     def yvalue(self,x):
         return (np.sqrt(self.y2Value(x)),-np.sqrt(self.y2Value(x)))
     
+    def isCurveElem(self,x,y):
+        return(self.y2Value(x)==y**2)
+    
     def pointNegation(self, point):
-        if isinstance(point, str):
-            if point=="inf":
-                return "inf"
-            else:
-                raise Exception("Not a valid point")
-        elif isinstance(point, (int,int)):
-            return 
+        match point:
+            case (x,y):
+                if (type(x) is int and type(y) is int and self.isCurveElem(x,y)):
+                    return (x,-y)
+                else:
+                    raise Exception ("Not a valid point on the curve")
+            case "Infinity":
+                return "Infinity"
+            case _:
+                raise Exception ("Not a valid point on the curve")
+            
     
     
-curve = EllipticCurve(-2,4)
+curve = EllipticCurve(0,4)
 print(curve.y2Value(2))
 print(curve) 
-print(pow(0.5,2))
-
+print(curve.pointNegation((0,-2)))
+print(curve.pointNegation("Infinity"))
 
