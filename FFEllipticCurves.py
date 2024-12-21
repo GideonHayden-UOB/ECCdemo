@@ -3,11 +3,11 @@ from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt 
 from dataclasses import dataclass
 
-
-class EllipticCurve:
-    def __init__(self, a, b):
+class FiniteFieldEllipticCurve:
+    def __init__(self, a, b, p:int):
         self.a = a
         self.b = b
+        self.p = p
 
     def __str__(self):
         return "y^2 = x^3 + "+str(self.a)+"x + "+str(self.b)
@@ -18,19 +18,9 @@ class EllipticCurve:
     def yvalue(self,x):
         return (np.sqrt(self.y2Value(x)),-np.sqrt(self.y2Value(x)))
     
-    def pointNegation(self, point):
-        if isinstance(point, str):
-            if point=="inf":
-                return "inf"
-            else:
-                raise Exception("Not a valid point")
-        elif isinstance(point, (int,int)):
-            return 
-    
-    
-curve = EllipticCurve(-2,4)
-print(curve.y2Value(2))
-print(curve) 
-print(pow(0.5,2))
+    def isElem(self,x,y):
+        return ((x**3 + self.a*x + self.b - y**2)%self.p ==0)
 
-
+curve2 = FiniteFieldEllipticCurve(0,7,17)
+print(curve2.isElem(9,15))
+print(curve2.isElem(5,8))
