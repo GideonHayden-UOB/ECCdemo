@@ -20,7 +20,7 @@ class EllipticCurve:
         return (math.sqrt(self.y2Value(x)))
     
     def isCurveElem(self,x,y):
-        return(self.y2Value(x)==y**2)
+        return(abs(self.y2Value(x)-y**2) <= 0.01)
     
 
     def pointNegation(self, point):
@@ -66,12 +66,38 @@ class EllipticCurve:
             case _:
                 raise Exception ("Not valid points on the curve")
 
-            
+    def pointMultiplication(self, P, s):
+        if (not isinstance(s,int)):
+            raise Exception("Can only multiply by integers")
+        match P:
+            case (x,y):
+                if (curve.isCurveElem(x,y)):
+                    s = bin(s)
+                    s = str(s)
+                    s = s[2:]
+                    res = "Infinity"
+                    temp = (x,y)
+                    for bit in s[::-1]:
+                        if (bit == '1'):
+                            res = curve.pointAddition(res,temp)
+                        temp = curve.pointAddition(temp,temp)
+                        
+                    return res
+                else:
+                    raise Exception("Invalid point to multiply (Not on the curve)")
+            case "Infinity":
+                return "Infinity"
+
+            case _:
+                raise Exception("Invalid point to multiply")
+
     
     
 curve = EllipticCurve(0,4)
-print(curve.y2Value(2))
-print(curve) 
-print(curve.pointNegation((0,-2)))
+#print(curve.y2Value(2))
+#print(curve) 
+#print(curve.pointNegation((0,-2)))
+print(curve.isCurveElem(3,curve.yvalue(3)))
 
-print(curve.pointAddition((3,curve.yvalue(3)),(1,curve.yvalue(1))))
+#print(curve.pointAddition((3,curve.yvalue(3)),(3,curve.yvalue(3))))
+print(curve.pointMultiplication((3,curve.yvalue(3)),4))
