@@ -68,28 +68,33 @@ class EllipticCurve:
 
     def pointMultiplication(self, P, s):
         if (not isinstance(s,int)):
+            raise Exception("Can only multiply by positive integers")
+        if (s<0):
             raise Exception("Can only multiply by integers")
-        match P:
-            case (x,y):
-                if (curve.isCurveElem(x,y)):
-                    s = bin(s)
-                    s = str(s)
-                    s = s[2:]
-                    res = "Infinity"
-                    temp = (x,y)
-                    for bit in s[::-1]:
-                        if (bit == '1'):
-                            res = curve.pointAddition(res,temp)
-                        temp = curve.pointAddition(temp,temp)
-                        
-                    return res
-                else:
-                    raise Exception("Invalid point to multiply (Not on the curve)")
-            case "Infinity":
-                return "Infinity"
+        elif (s==0):
+            return "Infinity"
+        else:
+            match P:
+                case (x,y):
+                    if (curve.isCurveElem(x,y)):
+                        s = bin(s)
+                        s = str(s)
+                        s = s[2:]
+                        res = "Infinity"
+                        temp = (x,y)
+                        for bit in s[::-1]:
+                            if (bit == '1'):
+                                res = curve.pointAddition(res,temp)
+                            temp = curve.pointAddition(temp,temp)
+                            
+                        return res
+                    else:
+                        raise Exception("Invalid point to multiply (Not on the curve)")
+                case "Infinity":
+                    return "Infinity"
 
-            case _:
-                raise Exception("Invalid point to multiply")
+                case _:
+                    raise Exception("Invalid point to multiply")
 
     
     
@@ -100,4 +105,4 @@ curve = EllipticCurve(0,4)
 print(curve.isCurveElem(3,curve.yvalue(3)))
 
 #print(curve.pointAddition((3,curve.yvalue(3)),(3,curve.yvalue(3))))
-print(curve.pointMultiplication((3,curve.yvalue(3)),4))
+print(curve.pointMultiplication((3,curve.yvalue(3)),7))
