@@ -2,6 +2,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt 
 from dataclasses import dataclass
+import math
 
 class FiniteFieldEllipticCurve:
     def __init__(self, a, b, p:int):
@@ -16,12 +17,12 @@ class FiniteFieldEllipticCurve:
         return (pow(x,3)+ self.a*x + self.b)
     
     def yvalue(self,x):
-        return (np.sqrt(self.y2Value(x)))
+        return (math.sqrt(self.y2Value(x)))
     
     def isElem(self,x,y):
         return ((x**3 + self.a*x + self.b - y**2)%self.p ==0)
 
-def tonelli_Shanks(p,n):
+def tonelliShanks(p,n):
     Q = p-1
     S = 0
     while (Q%2==0):
@@ -48,13 +49,19 @@ def tonelli_Shanks(p,n):
                 i = i+1
                 print(i,t)
                 if (i==M):
-                    raise Exception("n is not a quadratic residue") 
+                    raise Exception("n="+str(n)+" is not a quadratic residue mod "+str(p)) 
             b = (c**(2**(M-i-1))) %p
             M=i %p
             c = (b**2) %p
             t = (t*(b**2)) %p
             R = (R*b) %p
 
+def sqrtModPrime(p,n):
+    r = tonelliShanks(p,n)
+    if (p==(r+r)):
+        return r
+    else:
+        return r,p-r
 
 
 def isQuadraticResidue(p,a):
@@ -69,4 +76,5 @@ curve2 = FiniteFieldEllipticCurve(0,7,17)
 #print(curve2.isElem(9,15))
 #print(curve2.isElem(5,8))
 
-print(tonelli_Shanks(101,4))
+print(tonelliShanks(101,4))
+print(list(sqrtModPrime(11,5)))
