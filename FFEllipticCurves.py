@@ -1,10 +1,12 @@
 import numpy as np
+import libnum
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt 
 from dataclasses import dataclass
 import math
 
 class FiniteFieldEllipticCurve:
+    #elliptic curves over finite fields have the form y^2 = x^3 + ax + b (mod p) represented by these attributes
     def __init__(self, a, b, p:int):
         self.a = a
         self.b = b
@@ -14,13 +16,41 @@ class FiniteFieldEllipticCurve:
         return "y^2 = x^3 + "+str(self.a)+"x + "+str(self.b)
     
     def y2Value(self, x):
-        return (pow(x,3)+ self.a*x + self.b)
-    
-    def yvalue(self,x):
-        return (math.sqrt(self.y2Value(x)))
+        return ((pow(x,3)+ self.a*x + self.b) %self.p)
     
     def isElem(self,x,y):
         return ((x**3  - y**2 + self.a*x + self.b)%self.p ==0)
+    
+    def generatePoints(self):
+        xs = []
+        ys = []
+
+        for x in range(self.p):
+            if isQuadraticResidue(self.p, self.y2Value(x)):
+                squareRoots = sqrtModPrime(self.p, self.y2Value(x))
+
+                for y in squareRoots:
+                    ys.append(y)
+                    xs.append(x)
+        return xs,ys
+
+    def pointAddition(self, xp, yp, xq, yq):
+        lambdaP = ((yq-yp)%self.p) * pow((xq-xp),-1,self.p)
+        xr = (pow(lambdaP,2,self.p) - xp - xq)%self.p
+        yr = (lambdaP*(xp-xr) - yp) %self.p
+        return xr,yr
+
+
+
+def isQuadraticResidue(p,a):
+    if (a==0 or a==1):
+        return True
+    else:
+        ls = pow(a,(p-1)>>1,p)
+        if (ls==1):
+            return True
+        else:
+            return False
 
 def tonelliShanks(p,n):
     Q = p-1
@@ -58,31 +88,35 @@ def tonelliShanks(p,n):
 def sqrtModPrime(p,n):
     n=n%p
     if (p==2):
-        return n
+        return [n]
     else:
         if (p%4==3):
             r = pow(n,(p+1)>>2,p)
         else:
             r = tonelliShanks(p,n)
-        return r,p-r
-
-
-def isQuadraticResidue(p,a):
-    if (a==0 or a==1):
-        return True
-    else:
-        ls = pow(a,(p-1)>>1,p)
-        if (ls==1):
-            return True
+        if (r==0):
+            return [r]
         else:
-            return False
+            return r,p-r
 
 
-curve2 = FiniteFieldEllipticCurve(0,7,17)
+curve = FiniteFieldEllipticCurve(0,3,11)
+print(curve.generatePoints())
+xs,ys = curve.generatePoints()
+fig, (ax1) = plt.subplots(1, 1)
+fig.suptitle('y^2 = x^3 + 3 (mod p)')
+fig.set_size_inches(6, 6)
+ax1.set_xticks(range(0,curve.p))
+ax1.set_yticks(range(0,curve.p))
+plt.grid()
+plt.scatter(xs, ys)
+plt.plot()
+plt.show()
+
 #print(curve2.isElem(9,15))
 #print(curve2.isElem(5,8))
 
 
-print(isQuadraticResidue(101,4))
-print(tonelliShanks(101,4))
-print(list(sqrtModPrime(11,5)))
+#print(isQuadraticResidue(101,4))
+#print(tonelliShanks(101,4))
+#print(list(sqrtModPrime(11,5)))
