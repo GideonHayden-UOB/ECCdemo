@@ -35,11 +35,25 @@ class FiniteFieldEllipticCurve:
         return xs,ys
 
     def pointAddition(self, xp, yp, xq, yq):
-        lambdaP = ((yq-yp)%self.p) * pow((xq-xp),-1,self.p)
-        xr = (pow(lambdaP,2,self.p) - xp - xq)%self.p
-        yr = (lambdaP*(xp-xr) - yp) %self.p
-        return xr,yr
+        if (xp == yp == None):
+            return xq,yq
+        elif (xq == yq == None):
+            return xp,yp
+        elif (xq==xp and yq==yp):
+            return self.pointDouble(xp,yp)
+        elif (xq==xp and (yq+yp)%self.p==0):
+            return None,None
+        else:
+            lambdaP = ((yq-yp)%self.p) * pow((xq-xp),-1,self.p)
+            xr = (pow(lambdaP,2,self.p) - xp - xq)%self.p
+            yr = (lambdaP*(xp-xr) - yp) %self.p
+            return xr,yr
 
+    def pointDouble(self, x, y):
+        lambdaP = (((3*pow(x,2,self.p) + self.a)%self.p) * pow(2*y,-1,self.p)) %self.p 
+        xr = (pow(lambdaP,2,self.p) - 2*x)%self.p
+        yr = (lambdaP*(x-xr) - y) %self.p
+        return xr,yr
 
 
 def isQuadraticResidue(p,a):
