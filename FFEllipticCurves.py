@@ -20,13 +20,13 @@ class FiniteFieldEllipticCurve:
         return (math.sqrt(self.y2Value(x)))
     
     def isElem(self,x,y):
-        return ((x**3 + self.a*x + self.b - y**2)%self.p ==0)
+        return ((x**3  - y**2 + self.a*x + self.b)%self.p ==0)
 
 def tonelliShanks(p,n):
     Q = p-1
     S = 0
     while (Q%2==0):
-        Q = Q/2
+        Q = Q>>1
         S = S+1
     Q = int(Q)
     z= np.random.randint(2,p-2)
@@ -34,9 +34,9 @@ def tonelliShanks(p,n):
         z= np.random.randint(2,p-2)
 
     M = S
-    c = (z**Q ) %p
-    t = (n**Q)  %p
-    R = (n**int((Q+1)/2))  %p
+    c = pow(z,Q,p)
+    t = pow(n,Q,p)
+    R = pow(n,(Q+1)>>1,p)
 
     while(True):
         if (t==0):
@@ -45,36 +45,44 @@ def tonelliShanks(p,n):
             return R
         else:
             i=1
-            while (t**(2**i)%p != 1):
+            while (pow(t,2**i,p) != 1):
                 i = i+1
-                print(i,t)
                 if (i==M):
                     raise Exception("n="+str(n)+" is not a quadratic residue mod "+str(p)) 
-            b = (c**(2**(M-i-1))) %p
-            M=i %p
-            c = (b**2) %p
+            b = pow(c,2**(M-i-1),p)
+            M = i %p
+            c = pow(b,2,p)
             t = (t*(b**2)) %p
             R = (R*b) %p
 
 def sqrtModPrime(p,n):
-    r = tonelliShanks(p,n)
-    if (p==(r+r)):
-        return r
+    n=n%p
+    if (p==2):
+        return n
     else:
+        if (p%4==3):
+            r = pow(n,(p+1)>>2,p)
+        else:
+            r = tonelliShanks(p,n)
         return r,p-r
 
 
 def isQuadraticResidue(p,a):
-    ls = a**(int((p-1)/2))
-    if (ls%p==1):
+    if (a==0 or a==1):
         return True
     else:
-        return False
+        ls = pow(a,(p-1)>>1,p)
+        if (ls==1):
+            return True
+        else:
+            return False
 
 
 curve2 = FiniteFieldEllipticCurve(0,7,17)
 #print(curve2.isElem(9,15))
 #print(curve2.isElem(5,8))
 
+
+print(isQuadraticResidue(101,4))
 print(tonelliShanks(101,4))
 print(list(sqrtModPrime(11,5)))
