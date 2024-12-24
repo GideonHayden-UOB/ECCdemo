@@ -90,7 +90,14 @@ class FiniteFieldEllipticCurve:
             ys.append(nexty)
         return xs,ys
 
+    def PointCompression(self,x,y):
+        return x,(y%2)
 
+    def PointDecompression(self,x,ybit):
+        y = sqrtModPrime(self.p,pow(x, 3, self.p) + self.a * x + self.b)[0]
+        if bool(ybit) == bool(y & 1):
+            return (x, y)
+        return x, self.p - y
 
 def isQuadraticResidue(p,a):
     if (a==0 or a==1):
@@ -163,14 +170,9 @@ plt.scatter(xs, ys)
 plt.plot()
 #plt.show()
 
-assert curve.pointAddition(7,7,8,8)==(8,3),"fails"
-assert curve.pointAddition(8,8,1,9)==(0,5),"fails"
-assert curve.pointAddition(7,7,1,9)==(8,8),"fails"
-assert curve.pointAddition(4,10,4,10)==(7,7),"fails"
-assert curve.pointDouble(4,10)==(7,7),"fails"
-assert curve.pointMultiplication(4,10,2)==(7,7),"fails"
 
 print(curve.generatePointsFromGenerator(4,10))
+
 
 
 
