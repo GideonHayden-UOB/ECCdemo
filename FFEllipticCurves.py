@@ -37,14 +37,19 @@ class FiniteFieldEllipticCurve:
     def pointAddition(self, xp, yp, xq, yq):
         if (xp == yp == None):
             return xq,yq
-        elif (xq == yq == None):
+        if (xq == yq == None):
             return xp,yp
-        elif (xq==xp and yq==yp):
+        
+        assert self.isElem(xp,yp), "p not on the curve"
+        assert self.isElem(xq,yq), "q not on the curve"
+        
+
+        if (xq==xp and yq==yp):
             return self.pointDouble(xp,yp)
         elif (xq==xp and (yq+yp)%self.p==0):
             return None,None
         else:
-            lambdaP = ((yq-yp)%self.p) * pow((xq-xp),-1,self.p)
+            lambdaP = (((yq-yp)%self.p) * pow((xq-xp),-1,self.p)) %self.p
             xr = (pow(lambdaP,2,self.p) - xp - xq)%self.p
             yr = (lambdaP*(xp-xr) - yp) %self.p
             return xr,yr
@@ -54,6 +59,27 @@ class FiniteFieldEllipticCurve:
         xr = (pow(lambdaP,2,self.p) - 2*x)%self.p
         yr = (lambdaP*(x-xr) - y) %self.p
         return xr,yr
+    
+    def pointMultiplication(self,x,y,s):
+
+        assert(isinstance(s,int) and s>=0),"can only multiply by non negative integers"
+        assert(self.isElem(x,y)),"must be a point on the curve"
+        if s==0:
+            return None,None
+        else:
+            s = bin(s)
+            s = str(s)
+            s = s[2:]
+            resx,resy = None,None
+            tempx,tempy = x,y
+            for bit in s[::-1]:
+                if (bit == '1'):
+                    resx,resy = curve.pointAddition(resx,resy,tempx,tempy)
+                tempx,tempy = curve.pointDouble(tempx,tempy)
+                            
+            return resx,resy
+
+
 
 
 def isQuadraticResidue(p,a):
@@ -125,7 +151,17 @@ ax1.set_yticks(range(0,curve.p))
 plt.grid()
 plt.scatter(xs, ys)
 plt.plot()
-plt.show()
+#plt.show()
+
+assert curve.pointAddition(7,7,8,8)==(8,3),"fails"
+assert curve.pointAddition(8,8,1,9)==(0,5),"fails"
+assert curve.pointAddition(7,7,1,9)==(8,8),"fails"
+assert curve.pointAddition(4,10,4,10)==(7,7),"fails"
+assert curve.pointDouble(4,10)==(7,7),"fails"
+assert curve.pointMultiplication(4,10,2)==(7,7),"fails"
+
+
+
 
 #print(curve2.isElem(9,15))
 #print(curve2.isElem(5,8))
