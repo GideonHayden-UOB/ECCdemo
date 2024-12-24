@@ -43,11 +43,11 @@ class FiniteFieldEllipticCurve:
         assert self.isElem(xp,yp), "p not on the curve"
         assert self.isElem(xq,yq), "q not on the curve"
         
-
-        if (xq==xp and yq==yp):
-            return self.pointDouble(xp,yp)
-        elif (xq==xp and (yq+yp)%self.p==0):
+        if (xq==xp and (yq+yp)%self.p==0):
             return None,None
+        elif (xq==xp and yq==yp):
+            return self.pointDouble(xp,yp)
+
         else:
             lambdaP = (((yq-yp)%self.p) * pow((xq-xp),-1,self.p)) %self.p
             xr = (pow(lambdaP,2,self.p) - xp - xq)%self.p
@@ -60,7 +60,6 @@ class FiniteFieldEllipticCurve:
         yr = (lambdaP*(x-xr) - y) %self.p
         return xr,yr
     
-
     def naivePointMultiplication(self,x,y,s):
         nextx, nexty = x,y
         for i in range(s-1):
@@ -82,7 +81,7 @@ class FiniteFieldEllipticCurve:
             for bit in s[::-1]:
                 if (bit == '1'):
                     resx,resy = curve.pointAddition(resx,resy,tempx,tempy)
-                tempx,tempy = curve.pointDouble(tempx,tempy)
+                tempx,tempy = curve.pointAddition(tempx,tempy,tempx,tempy)
                             
             return resx,resy
 
@@ -105,6 +104,12 @@ class FiniteFieldEllipticCurve:
         if bool(ybit) == bool(y & 1):
             return (x, y)
         return x, self.p - y
+
+    
+
+
+
+
 
 def isQuadraticResidue(p,a):
     if (a==0 or a==1):
@@ -163,6 +168,8 @@ def sqrtModPrime(p,n):
         else:
             return r,p-r
 
+
+
 #implements diffie-hellman key exchange
 #parameters are curve, generator point for the curve (consisting of gx,gy) and private keys for alice(a) and bob(b): da,db respectively
 def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx,gy,da,db):
@@ -173,9 +180,9 @@ def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx,gy,da,db):
           "Alice's private key: "+str(da)+", Alice's public key: "+str(Qa)+"\n"+
           "Bob's private key: "+str(db)+", Bob's public key: "+str(Qb))
     
-    xk,yk = curve.naivePointMultiplication(Qa[0],Qa[1],db)
-    xk2,yk2 = curve.naivePointMultiplication(Qb[0],Qb[1],da)
-    print("Each person calculates the product of their private key with the other's private key \n This gives the same value for each person but is not known to other people")
+    xk,yk = curve.pointMultiplication(Qa[0],Qa[1],db)
+    xk2,yk2 = curve.pointMultiplication(Qb[0],Qb[1],da)
+    print("Each person calculates the product of their private key with the other's private key \nThis gives the same value for each person but is not known to other people")
     print("Shared secret is the x value of the calculated point: ",xk)
     print("Alice and Bob now have a shared secret that can be used in a symmetric key algorithm to encrypt and decrypt messages ")
 
@@ -193,10 +200,9 @@ plt.scatter(xs, ys)
 plt.plot()
 #plt.show()
 
-print(curve.naivePointMultiplication(1,9,5))
 
 
-#diffieHellmanKeyExchangeExample(curve,4,10,3,5)
+diffieHellmanKeyExchangeExample(curve,4,10,3,5)
 
 #print(curve.generatePointsFromGenerator(4,10))
 
