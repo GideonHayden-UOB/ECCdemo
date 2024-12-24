@@ -13,7 +13,7 @@ class FiniteFieldEllipticCurve:
         self.p = p
 
     def __str__(self):
-        return "y^2 = x^3 + "+str(self.a)+"x + "+str(self.b)
+        return "y^2 = x^3 + "+str(self.a)+"x + "+str(self.b)+" (mod "+str(self.p)+")"
     
     def y2Value(self, x):
         return ((pow(x,3)+ self.a*x + self.b) %self.p)
@@ -59,6 +59,13 @@ class FiniteFieldEllipticCurve:
         xr = (pow(lambdaP,2,self.p) - 2*x)%self.p
         yr = (lambdaP*(x-xr) - y) %self.p
         return xr,yr
+    
+
+    def naivePointMultiplication(self,x,y,s):
+        nextx, nexty = x,y
+        for i in range(s-1):
+            nextx, nexty = self.pointAddition(x,y,nextx,nexty)
+        return nextx,nexty
     
     def pointMultiplication(self,x,y,s):
 
@@ -156,12 +163,28 @@ def sqrtModPrime(p,n):
         else:
             return r,p-r
 
+#implements diffie-hellman key exchange
+#parameters are curve, generator point for the curve (consisting of gx,gy) and private keys for alice(a) and bob(b): da,db respectively
+def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx,gy,da,db):
+    Qa, Qb = curve.pointMultiplication(gx,gy,da), curve.pointMultiplication(gx,gy,db) #generates the public keys of alice and bob
+    
+    print("Curve: "+str(curve)+"\n"+
+          "Generator: "+str((gx,gy))+"\n"+
+          "Alice's private key: "+str(da)+", Alice's public key: "+str(Qa)+"\n"+
+          "Bob's private key: "+str(db)+", Bob's public key: "+str(Qb))
+    
+    xk,yk = curve.naivePointMultiplication(Qa[0],Qa[1],db)
+    xk2,yk2 = curve.naivePointMultiplication(Qb[0],Qb[1],da)
+    print("Each person calculates the product of their private key with the other's private key \n This gives the same value for each person but is not known to other people")
+    print("Shared secret is the x value of the calculated point: ",xk)
+    print("Alice and Bob now have a shared secret that can be used in a symmetric key algorithm to encrypt and decrypt messages ")
+
 
 curve = FiniteFieldEllipticCurve(0,3,11)
-print(curve.generatePoints())
+#print(curve.generatePoints())
 xs,ys = curve.generatePoints()
 fig, (ax1) = plt.subplots(1, 1)
-fig.suptitle('y^2 = x^3 + 3 (mod p)')
+fig.suptitle('y^2 = x^3 + '+str(curve.b)+ '(mod '+str(curve.p)+')')
 fig.set_size_inches(6, 6)
 ax1.set_xticks(range(0,curve.p))
 ax1.set_yticks(range(0,curve.p))
@@ -170,16 +193,10 @@ plt.scatter(xs, ys)
 plt.plot()
 #plt.show()
 
-
-print(curve.generatePointsFromGenerator(4,10))
-
+print(curve.naivePointMultiplication(1,9,5))
 
 
+#diffieHellmanKeyExchangeExample(curve,4,10,3,5)
 
-#print(curve2.isElem(9,15))
-#print(curve2.isElem(5,8))
+#print(curve.generatePointsFromGenerator(4,10))
 
-
-#print(isQuadraticResidue(101,4))
-#print(tonelliShanks(101,4))
-#print(list(sqrtModPrime(11,5)))
