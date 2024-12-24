@@ -1,9 +1,9 @@
 import numpy as np
-import libnum
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt 
 from dataclasses import dataclass
 import math
+import cProfile
 
 class FiniteFieldEllipticCurve:
     #elliptic curves over finite fields have the form y^2 = x^3 + ax + b (mod p) represented by these attributes
@@ -79,6 +79,16 @@ class FiniteFieldEllipticCurve:
                             
             return resx,resy
 
+    def generatePointsFromGenerator(self,x,y):
+        assert(self.isElem(x,y)),"not a point on the curve"
+        nextx,nexty = self.pointDouble(x,y)
+        xs = [x,nextx]
+        ys = [y,nexty]
+        while (nextx != x and nexty != y):
+            nextx,nexty= self.pointAddition(x,y,nextx,nexty)
+            xs.append(nextx)
+            ys.append(nexty)
+        return xs,ys
 
 
 
@@ -160,6 +170,7 @@ assert curve.pointAddition(4,10,4,10)==(7,7),"fails"
 assert curve.pointDouble(4,10)==(7,7),"fails"
 assert curve.pointMultiplication(4,10,2)==(7,7),"fails"
 
+print(curve.generatePointsFromGenerator(4,10))
 
 
 
