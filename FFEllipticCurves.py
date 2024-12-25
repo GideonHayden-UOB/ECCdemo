@@ -32,6 +32,8 @@ class FiniteFieldEllipticCurve:
                 for y in squareRoots:
                     ys.append(y)
                     xs.append(x)
+        xs.append(None)
+        ys.append(None)
         return xs,ys
 
     def pointAddition(self, xp, yp, xq, yq):
@@ -80,36 +82,50 @@ class FiniteFieldEllipticCurve:
             tempx,tempy = x,y
             for bit in s[::-1]:
                 if (bit == '1'):
-                    resx,resy = curve.pointAddition(resx,resy,tempx,tempy)
-                tempx,tempy = curve.pointAddition(tempx,tempy,tempx,tempy)
+                    resx,resy = self.pointAddition(resx,resy,tempx,tempy)
+                tempx,tempy = self.pointAddition(tempx,tempy,tempx,tempy)
                             
             return resx,resy
 
     def generatePointsFromGenerator(self,x,y):
         assert(self.isElem(x,y)),"not a point on the curve"
-        nextx,nexty = self.pointDouble(x,y)
-        xs = [x,nextx]
-        ys = [y,nexty]
-        while (nextx != x and nexty != y):
-            nextx,nexty= self.pointAddition(x,y,nextx,nexty)
+        nextx,nexty = self.pointAddition(x,y,x,y)
+        xs = [x]
+        ys = [y]
+        while (nextx != x or nexty != y):
             xs.append(nextx)
             ys.append(nexty)
+            nextx,nexty= self.pointAddition(x,y,nextx,nexty)
+
         return xs,ys
 
-    def PointCompression(self,x,y):
+    def pointCompression(self,x,y):
         return x,(y%2)
 
-    def PointDecompression(self,x,ybit):
+    def pointDecompression(self,x,ybit):
         y = sqrtModPrime(self.p,pow(x, 3, self.p) + self.a * x + self.b)[0]
         if bool(ybit) == bool(y & 1):
             return (x, y)
         return x, self.p - y
 
+    def groupCardinality(self):
+        xs = self.generatePoints()[0]
+        return len(xs)
+
+    def subgroupCardinality(self,x,y):
+        xs = self.generatePointsFromGenerator(x,y)[0]
+        return len(xs)
+
+    def isGenerator(self,x,y):
+        return self.groupCardinality() == self.subgroupCardinality(x,y)
+
+    def cofactor(self, gx, gy):
+        order = self.groupCardinality()
+        suborder = self.subgroupCardinality(gx,gy)
+        cofactor = (order//suborder)
+        return cofactor
+
     
-
-
-
-
 
 def isQuadraticResidue(p,a):
     if (a==0 or a==1):
@@ -187,22 +203,29 @@ def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx,gy,da,db):
     print("Alice and Bob now have a shared secret that can be used in a symmetric key algorithm to encrypt and decrypt messages ")
 
 
-curve = FiniteFieldEllipticCurve(0,3,11)
-#print(curve.generatePoints())
-xs,ys = curve.generatePoints()
-fig, (ax1) = plt.subplots(1, 1)
-fig.suptitle('y^2 = x^3 + '+str(curve.b)+ '(mod '+str(curve.p)+')')
-fig.set_size_inches(6, 6)
-ax1.set_xticks(range(0,curve.p))
-ax1.set_yticks(range(0,curve.p))
-plt.grid()
-plt.scatter(xs, ys)
-plt.plot()
-#plt.show()
 
 
 
-diffieHellmanKeyExchangeExample(curve,4,10,3,5)
+# curve = FiniteFieldEllipticCurve(0,3,11)
+# #print(curve.generatePoints())
+# xs,ys = curve.generatePoints()
+# fig, (ax1) = plt.subplots(1, 1)
+# fig.suptitle('y^2 = x^3 + '+str(curve.b)+ '(mod '+str(curve.p)+')')
+# fig.set_size_inches(6, 6)
+# ax1.set_xticks(range(0,curve.p))
+# ax1.set_yticks(range(0,curve.p))
+# plt.grid()
+# plt.scatter(xs, ys)
+# plt.plot()
+# #plt.show()
+
+curve2 = FiniteFieldEllipticCurve(0,7,17)
+print(curve2.groupCardinality())
+xs, ys = curve2.generatePoints()
+print(xs,ys)
+
+
+#diffieHellmanKeyExchangeExample(curve,4,10,3,5)
 
 #print(curve.generatePointsFromGenerator(4,10))
 
