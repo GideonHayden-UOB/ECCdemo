@@ -12,67 +12,71 @@ class FiniteFieldEllipticCurve:
         self.b = b
         self.p = p
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "y^2 = x^3 + "+str(self.a)+"x + "+str(self.b)+" (mod "+str(self.p)+")"
     
-    def y2Value(self, x):
-        return ((pow(x,3)+ self.a*x + self.b) %self.p)
+    def _y2Value(self, x: int) -> int:
+        return ((pow(x,3,self.p)+ self.a*x + self.b) %self.p)
     
-    def isElem(self,x,y):
+    def isElem(self,x: int | None, y: int | None) -> bool:
+        if (x==None and y==None):
+            return True
+        if ((isinstance(x, int) and not (isinstance(y, int))) or (isinstance(y, int) and not isinstance(x, int))):
+            return False
         return ((x**3  - y**2 + self.a*x + self.b)%self.p ==0)
     
-    def generatePoints(self):
-        xs = []
-        ys = []
-
+    def generatePoints(self) -> list[tuple[int,int] | tuple[None,None]]:
+        points = []
         for x in range(self.p):
-            if isQuadraticResidue(self.p, self.y2Value(x)):
-                squareRoots = sqrtModPrime(self.p, self.y2Value(x))
-
+            if isQuadraticResidue(self.p, self._y2Value(x)):
+                squareRoots = sqrtModPrime(self.p, self._y2Value(x))
                 for y in squareRoots:
-                    ys.append(y)
-                    xs.append(x)
-        xs.append(None)
-        ys.append(None)
-        return xs,ys
+                    points.append((x,y))
+        points.append((None,None))
+        return points
 
-    def pointAddition(self, xp, yp, xq, yq):
+    def pointAddition(self, xp:int | None, yp:int | None, xq:int | None, yq:int | None) -> tuple[int,int] | tuple[None,None]:
+ 
+        assert self.isElem(xp,yp), "p not on the curve"
+        assert self.isElem(xq,yq), "q not on the curve"
+
         if (xp == yp == None):
             return xq,yq
         if (xq == yq == None):
             return xp,yp
-        
-        assert self.isElem(xp,yp), "p not on the curve"
-        assert self.isElem(xq,yq), "q not on the curve"
-        
         if (xq==xp and (yq+yp)%self.p==0):
             return None,None
         elif (xq==xp and yq==yp):
-            return self.pointDouble(xp,yp)
-
+            return self._pointDouble(xp,yp)
         else:
             lambdaP = (((yq-yp)%self.p) * pow((xq-xp),-1,self.p)) %self.p
             xr = (pow(lambdaP,2,self.p) - xp - xq)%self.p
             yr = (lambdaP*(xp-xr) - yp) %self.p
             return xr,yr
 
-    def pointDouble(self, x, y):
+    def _pointDouble(self, x:int, y:int) -> tuple[int,int]:
         lambdaP = (((3*pow(x,2,self.p) + self.a)%self.p) * pow(2*y,-1,self.p)) %self.p 
         xr = (pow(lambdaP,2,self.p) - 2*x)%self.p
         yr = (lambdaP*(x-xr) - y) %self.p
         return xr,yr
     
-    def naivePointMultiplication(self,x,y,s):
+    def _naivePointMultiplication(self, x:int | None, y:int | None, s:int) -> tuple[int,int] | tuple[None,None]:
+        assert s>=0, "can only multiply by non-negative integers"
+        if (x==None and y==None):
+            return x,y
+        assert self.isElem(x,y),str(x)+","+str(y)+" is not a point on the curve"
+        if s==0:
+            return None,None
         nextx, nexty = x,y
         for i in range(s-1):
             nextx, nexty = self.pointAddition(x,y,nextx,nexty)
         return nextx,nexty
     
-    def pointMultiplication(self,x,y,s):
+    def pointMultiplication(self, x:int | None, y:int | None, s:int) -> tuple[int,int] | tuple[None,None]:
 
         assert(isinstance(s,int) and s>=0),"can only multiply by non negative integers"
         assert(self.isElem(x,y)),"must be a point on the curve"
-        if s==0:
+        if (s==0 or (x==None and y==None)):
             return None,None
         else:
             s = bin(s)
@@ -87,39 +91,38 @@ class FiniteFieldEllipticCurve:
                             
             return resx,resy
 
-    def generatePointsFromGenerator(self,x,y):
+    def generatePointsFromGenerator(self, x:int | None, y:int | None) -> list[tuple[int,int] | tuple[None,None]]:
         assert(self.isElem(x,y)),"not a point on the curve"
+        if (x==None and y==None):
+            return [(None,None)]
         nextx,nexty = self.pointAddition(x,y,x,y)
-        xs = [x]
-        ys = [y]
+        points=[(x,y)]
         while (nextx != x or nexty != y):
-            xs.append(nextx)
-            ys.append(nexty)
+            points.append((nextx,nexty))
             nextx,nexty= self.pointAddition(x,y,nextx,nexty)
 
-        return xs,ys
+        return points
 
-    def pointCompression(self,x,y):
+    def pointCompression(self, x:int, y:int) -> tuple[int,int]:
+        assert self.isElem(x,y) and isinstance(x,int) and isinstance(y,int),"must be a non-infinity point on the curve"
         return x,(y%2)
 
-    def pointDecompression(self,x,ybit):
+    def pointDecompression(self, x:int, ybit:int) -> tuple[int,int]:
         y = sqrtModPrime(self.p,pow(x, 3, self.p) + self.a * x + self.b)[0]
         if bool(ybit) == bool(y & 1):
             return (x, y)
         return x, self.p - y
 
-    def groupCardinality(self):
-        xs = self.generatePoints()[0]
-        return len(xs)
+    def groupCardinality(self) -> int:
+        return len(self.generatePoints())
 
-    def subgroupCardinality(self,x,y):
-        xs = self.generatePointsFromGenerator(x,y)[0]
-        return len(xs)
+    def subgroupCardinality(self, x:int | None, y:int | None) -> int:
+        return len(self.generatePointsFromGenerator(x,y))
 
-    def isGenerator(self,x,y):
+    def isGenerator(self, x:int | None, y:int | None) -> bool:
         return self.groupCardinality() == self.subgroupCardinality(x,y)
 
-    def cofactor(self, gx, gy):
+    def cofactor(self, gx:int | None, gy:int | None) -> int:
         order = self.groupCardinality()
         suborder = self.subgroupCardinality(gx,gy)
         cofactor = (order//suborder)
@@ -127,7 +130,7 @@ class FiniteFieldEllipticCurve:
 
     
 
-def isQuadraticResidue(p,a):
+def isQuadraticResidue(p:int, a:int) -> bool:
     if (a==0 or a==1):
         return True
     else:
@@ -137,7 +140,7 @@ def isQuadraticResidue(p,a):
         else:
             return False
 
-def tonelliShanks(p,n):
+def tonelliShanks(p:int, n:int) -> int:
     Q = p-1
     S = 0
     while (Q%2==0):
@@ -170,7 +173,8 @@ def tonelliShanks(p,n):
             t = (t*(b**2)) %p
             R = (R*b) %p
 
-def sqrtModPrime(p,n):
+def sqrtModPrime(p:int ,n:int) -> list[int]:
+    assert p>=2,"p must be a prime greater than or equal to 2"
     n=n%p
     if (p==2):
         return [n]
@@ -188,7 +192,7 @@ def sqrtModPrime(p,n):
 
 #implements diffie-hellman key exchange
 #parameters are curve, generator point for the curve (consisting of gx,gy) and private keys for alice(a) and bob(b): da,db respectively
-def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx,gy,da,db):
+def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx:int | None, gy:int | None, da:int , db:int):
     Qa, Qb = curve.pointMultiplication(gx,gy,da), curve.pointMultiplication(gx,gy,db) #generates the public keys of alice and bob
     
     print("Curve: "+str(curve)+"\n"+
@@ -205,8 +209,7 @@ def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx,gy,da,db):
 
 
 
-
-# curve = FiniteFieldEllipticCurve(0,3,11)
+curve = FiniteFieldEllipticCurve(0,3,11)
 # #print(curve.generatePoints())
 # xs,ys = curve.generatePoints()
 # fig, (ax1) = plt.subplots(1, 1)
@@ -221,11 +224,18 @@ def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx,gy,da,db):
 
 curve2 = FiniteFieldEllipticCurve(0,7,17)
 print(curve2.groupCardinality())
-xs, ys = curve2.generatePoints()
-print(xs,ys)
+points = curve2.generatePoints()
+print(points)
+
+print(curve2.isElem(1,12))
+
+print(curve2.isElem(None,12))
+print(curve2.isElem(3,12))
+
+print(curve2.isElem(None,None))
 
 
 #diffieHellmanKeyExchangeExample(curve,4,10,3,5)
 
-#print(curve.generatePointsFromGenerator(4,10))
+print(curve.generatePointsFromGenerator(4,10))
 
