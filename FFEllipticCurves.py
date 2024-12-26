@@ -8,7 +8,7 @@ from cryptography.fernet import Fernet
 
 class FiniteFieldEllipticCurve:
     #elliptic curves over finite fields have the form y^2 = x^3 + ax + b (mod p) represented by these attributes
-    def __init__(self, a, b, p:int):
+    def __init__(self, a:int, b:int, p:int):
         self.a = a
         self.b = b
         self.p = p
@@ -75,8 +75,8 @@ class FiniteFieldEllipticCurve:
     
     def pointMultiplication(self, x:int | None, y:int | None, s:int) -> tuple[int,int] | tuple[None,None]:
 
-        assert(isinstance(s,int) and s>=0),"can only multiply by non negative integers"
-        assert(self.isElem(x,y)),"must be a point on the curve"
+        assert isinstance(s,int) and s>=0,"can only multiply by non negative integers"
+        assert self.isElem(x,y),"must be a point on the curve"
         if (s==0 or (x==None and y==None)):
             return None,None
         else:
