@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 import math
 import cProfile
+from cryptography.fernet import Fernet
 
 class FiniteFieldEllipticCurve:
     #elliptic curves over finite fields have the form y^2 = x^3 + ax + b (mod p) represented by these attributes
@@ -201,41 +202,50 @@ def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx:int | None
           "Bob's private key: "+str(db)+", Bob's public key: "+str(Qb))
     
     xk,yk = curve.pointMultiplication(Qa[0],Qa[1],db)
-    xk2,yk2 = curve.pointMultiplication(Qb[0],Qb[1],da)
     print("Each person calculates the product of their private key with the other's private key \nThis gives the same value for each person but is not known to other people")
     print("Shared secret is the x value of the calculated point: ",xk)
     print("Alice and Bob now have a shared secret that can be used in a symmetric key algorithm to encrypt and decrypt messages ")
+
+#takes a list of coordinates and returns a tuple of lists of integers
+#[(x1,y1),(x2,y2),(x3,y3)] -> ([x1,x2,x3],[y1,y2,y3])
+def _pointsUnzip(points: list[tuple[int,int] | tuple[None,None]]) -> tuple[list[int],list[int]]:
+    points = list(map(list, zip(*points)))
+    return points[0],points[1]
+
+#plots the curve using mathplotlib
+def plotCurve(curve:FiniteFieldEllipticCurve):
+    xs,ys = _pointsUnzip(curve.generatePoints())
+    fig, (ax1) = plt.subplots(1, 1)
+    fig.suptitle('y^2 = x^3 + '+str(curve.b)+ '(mod '+str(curve.p)+')')
+    fig.set_size_inches(6, 6)
+    ax1.set_xticks(range(0,curve.p))
+    ax1.set_yticks(range(0,curve.p))
+    plt.grid()
+    plt.scatter(xs, ys)
+    plt.plot()
+    plt.show()
+
 
 
 
 
 curve = FiniteFieldEllipticCurve(0,3,11)
-# #print(curve.generatePoints())
-# xs,ys = curve.generatePoints()
-# fig, (ax1) = plt.subplots(1, 1)
-# fig.suptitle('y^2 = x^3 + '+str(curve.b)+ '(mod '+str(curve.p)+')')
-# fig.set_size_inches(6, 6)
-# ax1.set_xticks(range(0,curve.p))
-# ax1.set_yticks(range(0,curve.p))
-# plt.grid()
-# plt.scatter(xs, ys)
-# plt.plot()
-# #plt.show()
-
-curve2 = FiniteFieldEllipticCurve(0,7,17)
-print(curve2.groupCardinality())
-points = curve2.generatePoints()
-print(points)
-
-print(curve2.isElem(1,12))
-
-print(curve2.isElem(None,12))
-print(curve2.isElem(3,12))
-
-print(curve2.isElem(None,None))
 
 
-#diffieHellmanKeyExchangeExample(curve,4,10,3,5)
+# curve2 = FiniteFieldEllipticCurve(0,7,17)
+# print(curve2.groupCardinality())
+# points = curve2.generatePoints()
+# print(points)
 
-print(curve.generatePointsFromGenerator(4,10))
+# print(curve2.isElem(1,12))
+
+# print(curve2.isElem(None,12))
+# print(curve2.isElem(3,12))
+
+# print(curve2.isElem(None,None))
+
+
+#diffieHellmanKeyExchangeExample(curve,4,10,3,6)
+
+#print(curve.generatePointsFromGenerator(4,10))
 
