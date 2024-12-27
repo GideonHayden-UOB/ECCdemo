@@ -1,7 +1,3 @@
-import numpy as np
-from scipy.interpolate import interp1d
-import matplotlib.pyplot as plt 
-from dataclasses import dataclass
 import math
 import numbers
 
@@ -181,7 +177,6 @@ class EllipticCurve:
                             
             return self._errorCorrect(resx,resy)
 
-    
     
 curve = EllipticCurve(0,4)
 #print(curve.y2Value(2))

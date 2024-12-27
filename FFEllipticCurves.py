@@ -375,10 +375,6 @@ def sqrtModPrime(p:int ,n:int) -> list[int]:
         else:
             return r,p-r
 
-
-
-#implements diffie-hellman key exchange
-#parameters are curve, generator point for the curve (consisting of gx,gy) and private keys for alice(a) and bob(b): da,db respectively
 def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx:int | None, gy:int | None, da:int , db:int):
     """
     Print a simple explanation for diffie-hellman key exchange using the input paramenters.
@@ -402,13 +398,10 @@ def diffieHellmanKeyExchangeExample(curve:FiniteFieldEllipticCurve,gx:int | None
     print("Shared secret is the x value of the calculated point: ",xk)
     print("Alice and Bob now have a shared secret that can be used in a symmetric key algorithm to encrypt and decrypt messages ")
 
-#takes a list of coordinates and returns a tuple of lists of integers
-#[(x1,y1),(x2,y2),(x3,y3)] -> ([x1,x2,x3],[y1,y2,y3])
 def _pointsUnzip(points: list[tuple[int,int] | tuple[None,None]]) -> tuple[list[int],list[int]]:
     points = list(map(list, zip(*points)))
     return points[0],points[1]
 
-#plots the curve using mathplotlib
 def _plotCurve(curve:FiniteFieldEllipticCurve):
     xs,ys = _pointsUnzip(curve.generatePoints())
     fig, (ax1) = plt.subplots(1, 1)
