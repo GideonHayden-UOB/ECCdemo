@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.2' 
+VERSION = '0.0.3' 
 DESCRIPTION = 'Elliptic curve python package'
 LONG_DESCRIPTION = 'Python package that facilitates the arithmetic operations on elliptic curves both over reals and finite fields'
 
@@ -16,10 +16,7 @@ setup(
         install_requires=['numpy',
                           'scipy',
                           'matplotlib',
-                          'sympy',
-                          'warnings',
-                          'math',
-                          'numbers'], # add any additional packages that 
+                          'sympy'], # add any additional packages that 
         # needs to be installed along with your package. Eg: 'caer'
 
         keywords=['python', 'first package'],
