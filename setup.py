@@ -7,7 +7,7 @@ LONG_DESCRIPTION = 'Python package that facilitates the arithmetic operations on
 # Setting up
 setup(
        # the name must match the folder name 'verysimplemodule'
-        name="ECC", 
+        name="GideonHaydenECC", 
         version=VERSION,
         author="Gideon Hayden",
         description=DESCRIPTION,
