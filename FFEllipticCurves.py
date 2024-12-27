@@ -413,28 +413,3 @@ def _plotCurve(curve:FiniteFieldEllipticCurve):
     plt.scatter(xs, ys)
     plt.plot()
     plt.show()
-
-
-
-
-
-curve = FiniteFieldEllipticCurve(0,3,11)
-
-
-# curve2 = FiniteFieldEllipticCurve(0,7,17)
-# print(curve2.groupCardinality())
-# points = curve2.generatePoints()
-# print(points)
-
-# print(curve2.isElem(1,12))
-
-# print(curve2.isElem(None,12))
-# print(curve2.isElem(3,12))
-
-# print(curve2.isElem(None,None))
-
-
-#diffieHellmanKeyExchangeExample(curve,4,10,3,6)
-
-#print(curve.generatePointsFromGenerator(4,10))
-

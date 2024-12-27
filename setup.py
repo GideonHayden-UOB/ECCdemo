@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1' 
+VERSION = '0.0.2' 
 DESCRIPTION = 'Elliptic curve python package'
 LONG_DESCRIPTION = 'Python package that facilitates the arithmetic operations on elliptic curves both over reals and finite fields'
 
@@ -14,9 +14,9 @@ setup(
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
         install_requires=['numpy',
-                          'scipy.interpolate',
-                          'matplotlib.pyplot',
-                          'sympy.ntheory',
+                          'scipy',
+                          'matplotlib',
+                          'sympy',
                           'warnings',
                           'math',
                           'numbers'], # add any additional packages that 

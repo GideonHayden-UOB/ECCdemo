@@ -176,13 +176,3 @@ class EllipticCurve:
                 tempx,tempy = self.pointAddition(tempx,tempy,tempx,tempy)
                             
             return self._errorCorrect(resx,resy)
-
-    
-curve = EllipticCurve(0,4)
-#print(curve.y2Value(2))
-#print(curve) 
-#print(curve.pointNegation((0,-2)))
-print(curve.isElem(3,curve.yvalue(3)))
-
-#print(curve.pointAddition((3,curve.yvalue(3)),(3,curve.yvalue(3))))
-print(curve.pointMultiplication(3,curve.yvalue(3),7))

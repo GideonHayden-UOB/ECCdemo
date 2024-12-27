@@ -1,7 +1,7 @@
 numpy
-scipy.interpolate
-matplotlib.pyplot
-sympy.ntheory
+scipy
+matplotlib
+sympy
 warnings
 math
 numbers
